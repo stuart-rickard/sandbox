@@ -4,33 +4,48 @@
 
 #layer-1 {
     display: inline-block;
-    width: 600px;
-    height: 600px;
-    background-color: blue;
+    background-color: cornflowerblue;
+    width: 820px;
+    height: 820px;
     border: 40px solid black;
-    border-radius: 300px;
+    border-radius: 450px;
+    /* outside of circle is 900px; inside is 820px */    
 }
 
 #layer-2 {
     display: inline-block;
-    width: 450px;
-    height: 450px;
-    background-color: orange;
+    background-color: blue;
+    width: 520px;
+    height: 520px;
     border: 40px solid black;
-    border-radius: 225px;
+    border-radius: 300px;
+    /* outside of circle is 600px; inside is 520px */
     position: relative;
-    top: 75px; left: 150px;
+    top: 110px; left: 220px;
 }
 
 #layer-3 {
     display: inline-block;
-    width: 300px;
-    height: 300px;
+    background-color: orange;
+    width: 360px;
+    height: 360px;
+    border: 40px solid black;
+    border-radius: 220px;
+    /* outside of circle is 440px; inside is 360px */
+    position: relative;
+    top: 40px; left: 80px;
+}
+
+#layer-4 {
+    display: inline-block;
     background-color: olive;
+    width: 220px;
+    height: 220px;
     border: 40px solid black;
     border-radius: 150px;
+    /* outside of circle is 300px; inside is 220px */
     position: relative;
-    top: 75px; left: 150px;
+    top: 30px; left: 60px;
 }
 
 .bottom-button {
