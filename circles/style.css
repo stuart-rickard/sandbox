@@ -52,3 +52,8 @@
     position: absolute;
     bottom: 10px;;
 }
+
+#step {
+    background-color: red;
+    font-size: 30px;
+}
