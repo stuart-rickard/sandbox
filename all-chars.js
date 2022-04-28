@@ -1,11 +1,11 @@
 let bodyEl = document.getElementById("body");
 const maxCharCode = 16384;
 // const maxCharCode = 256;
-const columns = 100;
+const columns = maxCharCode / 75;
 
 let currentCharCode = 0;
 
-for (x = 0; x <= 80; x++) {
+for (x = 0; x <= 75; x++) {
   let rowElement = document.createElement("tr");
   bodyEl.appendChild(rowElement);
 
@@ -18,5 +18,5 @@ for (x = 0; x <= 80; x++) {
   }
 }
 
-let currentCharEl = document.getElementById("currentChar");
-currentCharEl.textContent = String.fromCharCode(2735) + `  ${2735}`;
+// let currentCharEl = document.getElementById("currentChar");
+// currentCharEl.textContent = String.fromCharCode(2735) + `  ${2735}`;
