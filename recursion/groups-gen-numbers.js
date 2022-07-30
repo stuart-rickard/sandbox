@@ -15,21 +15,20 @@
 // 4,3,1,1
 
 let groupArr = [];
-let resultArr = [];
-let resultSource = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 let groupCollection = [];
 
 function populateGroupArr(total) {
+  //   groupArr = [3, 3, 3, 3];
   for (let n = 0; n < total; n++) {
-    groupArr.push(total - n - 1);
+    groupArr.push(1);
   }
   groupCollection.push([...groupArr]);
   return groupArr;
 }
 
-function fillWithDescendingIndex(index) {
+function fillWithOnes(index) {
   for (let n = index; n < groupArr.length; n++) {
-    groupArr[n] = groupArr.length - 1 - n;
+    groupArr[n] = 1;
   }
 }
 
@@ -46,38 +45,28 @@ function processForward(myIndex, myTargetValue) {
   } else {
     groupArr[myIndex]++;
     groupCollection.push([...groupArr]);
-    let result = processForward(myIndex + 1, groupArr[myIndex] - 1);
-    while (result < myTargetValue - 1) {
+    let result = processForward(myIndex + 1, groupArr[myIndex]);
+    while (result < myTargetValue) {
       groupArr[myIndex]++;
-      fillWithDescendingIndex(myIndex + 1);
+      fillWithOnes(myIndex + 1);
       groupCollection.push([...groupArr]);
-      result = processForward(myIndex + 1, groupArr[myIndex] - 1);
+      result = processForward(myIndex + 1, groupArr[myIndex]);
     }
-    return groupArr[myIndex];
+    return result;
   }
 }
 
 function updateGroupArr() {
   for (let l = 2; l <= groupArr.length; l++) {
-    fillWithDescendingIndex(1);
+    fillWithOnes(1);
     groupArr[0]++;
     groupCollection.push([...groupArr]);
-    processForward(1, groupArr[0] - 1);
+    processForward(1, groupArr[0]);
   }
   console.log(groupCollection.length);
   return groupCollection;
 }
-
-function makeResultArr(groupCollection) {
-  for (group of groupCollection) {
-    resultArr.push(group.map((i) => resultSource[i]));
-  }
-}
 console.time();
-console.log(populateGroupArr(5));
-updateGroupArr();
-makeResultArr(groupCollection);
-console.log(groupCollection);
-console.log(groupCollection[groupCollection.length - 1]);
-console.log(resultArr);
+console.log(populateGroupArr(4));
+console.log(updateGroupArr());
 console.log(console.timeEnd());
