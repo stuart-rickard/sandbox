@@ -16,39 +16,7 @@
 
 let groupArr = [];
 let resultArr = [];
-let resultSource = [
-  "a",
-  "a",
-  "a",
-  "b",
-  "b",
-  "b",
-  "b",
-  "c",
-  "d",
-  "e",
-  "f",
-  "g",
-  "h",
-  "i",
-  "j",
-];
-let nextValue = {
-  0: 3,
-  1: 3,
-  2: 3,
-  3: 7,
-  4: 7,
-  5: 7,
-  6: 7,
-  7: 8,
-  8: 9,
-  9: 10,
-  10: 11,
-  11: 12,
-  12: 13,
-  13: 14,
-};
+let resultSource = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"];
 let groupCollection = [];
 
 function populateGroupArr(total) {
@@ -57,17 +25,6 @@ function populateGroupArr(total) {
   }
   groupCollection.push([...groupArr]);
   return groupArr;
-}
-
-function nextValueOf(resultSourceIndex, indexInArray) {
-  // can't be more than value of groupArr[index-1]
-  // but otherwise should be incremented to nextValue[index]
-  // let prev = groupArr[indexInArray - 1] - 1;
-  let bump = nextValue[resultSourceIndex];
-  // console.log(bump, "bump ", Math.min(prev, bump));
-  // return Math.min(prev, bump);
-  return bump;
-  // return resultSourceIndex + 1;
 }
 
 function fillWithDescendingIndex(index) {
@@ -80,18 +37,18 @@ function processForward(myIndex, myTargetValue) {
   // last index - increment and save; return target number when reached
   if (myIndex === groupArr.length - 1) {
     while (groupArr[myIndex] < myTargetValue) {
-      groupArr[myIndex] = nextValueOf(groupArr[myIndex], myIndex);
+      groupArr[myIndex]++;
       groupCollection.push([...groupArr]);
     }
     return groupArr[myIndex];
 
     // other indices - increment and save; send current value to last index as target; if returned value is not my target, increment, fill with ones, save, and send current value to last index as target; return target number when reached
   } else {
-    groupArr[myIndex] = nextValueOf(groupArr[myIndex], myIndex);
+    groupArr[myIndex]++;
     groupCollection.push([...groupArr]);
     let result = processForward(myIndex + 1, groupArr[myIndex] - 1);
     while (result < myTargetValue - 1) {
-      groupArr[myIndex] = nextValueOf(groupArr[myIndex], myIndex);
+      groupArr[myIndex]++;
       fillWithDescendingIndex(myIndex + 1);
       groupCollection.push([...groupArr]);
       result = processForward(myIndex + 1, groupArr[myIndex] - 1);
@@ -103,7 +60,6 @@ function processForward(myIndex, myTargetValue) {
 function updateGroupArr() {
   for (let l = 2; l <= groupArr.length; l++) {
     fillWithDescendingIndex(1);
-
     groupArr[0]++;
     groupCollection.push([...groupArr]);
     processForward(1, groupArr[0] - 1);
