@@ -7,6 +7,48 @@
 // [4,4][4,3][4,1=leaf][3,1][1,1=end] go through each remaining value and pair it with each different value that is available. Leaves get noted and taken off the list.  At end go to next size group.
 // [4,4,3][4,4,1-contains leaf][4,3,1-contains leaf][3,1,1=leaf/end]  go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. Leaves get noted and taken off the list.  At end go to next size group.
 // [4,4,3,1-contains leaf/end]DONE go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. at end there is nothing left so don't go to next size
+function containsLeaf(toCheck, leafsArray) {
+  let inventory = {};
+
+  function createInventory(toCheck) {
+    toCheck.forEach((element) => {
+      if (inventory[element]) {
+        inventory[element]++;
+      } else {
+        inventory[element] = 1;
+      }
+    });
+  }
+
+  createInventory(toCheck);
+
+  function subtractFromInventory(groupCollection, inventory) {
+    let flag;
+    groupCollection.forEach((value) => {
+      if (inventory[value]--) {
+        return;
+      } else {
+        flag = true;
+      }
+    });
+    if (flag) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+  // if toCheck contains a leaf, return true
+  //  for loop though leafsArray
+  for (const leaf of leafsArray) {
+    const testInventory = { ...inventory };
+    if (subtractFromInventory(leaf, testInventory)) {
+      return true;
+    }
+  }
+  // else return false
+  return false;
+}
+
 function aLeaf(array, batchsize) {
   if (array.reduce((partialSum, a) => partialSum + a, 0) % batchsize == 0) {
     return true;
@@ -22,6 +64,7 @@ function getAvailable(masterArray, subArray) {
   // console.log(subArray);
   const arr = [...masterArray];
   const captureArray = [];
+  // XXXXXX deal with upper limit
   const lowestElement = subArray[subArray.length - 1] || 500;
   arr.forEach((value) => {
     if (value <= lowestElement) {
@@ -31,7 +74,7 @@ function getAvailable(masterArray, subArray) {
   subArray.forEach((value) => {
     const index = captureArray.indexOf(value);
     if (index != -1) {
-      console.log("splice");
+      // console.log("splice");
       captureArray.splice(index, 1);
     }
   });
@@ -44,7 +87,8 @@ function uniqueMembers(orderedArray) {
 
 let end = false;
 let length = 1;
-let sourceArray = [4, 4, 3, 1, 1];
+let sourceArray = [4, 4, 3, 3, 3, 3, 2, 1, 1];
+// XXXXXXXXXX deal with zeros in sourceArray
 // let sourceArray = [4, 4, 3, 1, 1, 0];
 // let nextValue = { 4: 3, 3: 1, 1: 0, 0: null };
 let passForwardArray = [[]];
@@ -83,8 +127,13 @@ while (!end) {
       console.log(toCheck);
       // check each value --
       if (aLeaf(toCheck, batchsize)) {
-        // leafs get collected
-        leafsArray.push(toCheck);
+        // leafs get collected if they don't already contain a leaf
+        if (containsLeaf(toCheck, leafsArray)) {
+          // do nothing
+          console.log("do nothing");
+        } else {
+          leafsArray.push(toCheck);
+        }
       } else {
         // one that is not a leaf gets passed forward;
         passForwardArray.push(toCheck);
@@ -93,11 +142,12 @@ while (!end) {
 
     // currentSource = [...passForwardArray];
   }
-  if (count == 5) {
+  // if (count == 5) {
+  if (!passForwardArray.length) {
     end = true;
     break;
   }
-  count++;
+  // count++;
   console.log("back to while");
   workingArray = [...passForwardArray];
 }
@@ -128,21 +178,21 @@ let inventory = { 2: 4, 3: 5, 6: 1 };
 let arrOne = [2, 3, 3, 6];
 let arrTwo = [2, 2, 6];
 
-function subtractFromInventory(groupCollection, inventory) {
-  let flag;
-  groupCollection.forEach((value) => {
-    if (inventory[value]--) {
-      return;
-    } else {
-      flag = true;
-    }
-  });
-  if (flag) {
-    return false;
-  } else {
-    return true;
-  }
-}
+// function subtractFromInventory(groupCollection, inventory) {
+//   let flag;
+//   groupCollection.forEach((value) => {
+//     if (inventory[value]--) {
+//       return;
+//     } else {
+//       flag = true;
+//     }
+//   });
+//   if (flag) {
+//     return false;
+//   } else {
+//     return true;
+//   }
+// }
 
 // console.log(inventory);
 // console.log(subtractFromInventory(arrOne, inventory));
