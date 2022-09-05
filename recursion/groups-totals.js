@@ -9,6 +9,18 @@ function cl(log) {
 
 let metaConfirmedArray = [];
 
+let inventory = {};
+
+function createInventory(array) {
+  array.forEach((element) => {
+    if (inventory[element]) {
+      inventory[element]++;
+    } else {
+      inventory[element] = 1;
+    }
+  });
+}
+
 // function checkSets(setLength, initialArray, groupSize)
 function checkSets(setLength, initialArray, groupSize) {
   let workingArray = [];
@@ -176,10 +188,13 @@ function checkSets(setLength, initialArray, groupSize) {
   });
 }
 
-console.time();
-for (setLength = 2; setLength <= initialArray.length; setLength++) {
-  checkSets(setLength, initialArray, 9);
-}
-cl("metaConfirmedArray is:");
-console.dir(metaConfirmedArray, { depth: null });
-console.log(console.timeEnd());
+// console.time();
+// for (setLength = 2; setLength <= initialArray.length; setLength++) {
+//   checkSets(setLength, initialArray, 9);
+// }
+// cl("metaConfirmedArray is:");
+// console.dir(metaConfirmedArray, { depth: null });
+// console.log(console.timeEnd());
+
+createInventory(initialArray);
+cl(inventory);

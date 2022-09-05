@@ -1,3 +1,109 @@
+// tree approach where depth is incrementally increased; a node where mod = 0 is a leaf - this prevents redundant gC's
+// use group generator and subtractFromInventory on the array of gC's to create valid cgC's
+// ++ refine this so that we're not looking at all valid cgC's
+
+// 4,4,3,1,1,0
+// [4][3][1][0=leaf/end] go through each different value. leaves get noted and taken off the list. At end go to next size group.
+// [4,4][4,3][4,1=leaf][3,1][1,1=end] go through each remaining value and pair it with each different value that is available. Leaves get noted and taken off the list.  At end go to next size group.
+// [4,4,3][4,4,1-contains leaf][4,3,1-contains leaf][3,1,1=leaf/end]  go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. Leaves get noted and taken off the list.  At end go to next size group.
+// [4,4,3,1-contains leaf/end]DONE go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. at end there is nothing left so don't go to next size
+function aLeaf(array, batchsize) {
+  if (array.reduce((partialSum, a) => partialSum + a, 0) % batchsize == 0) {
+    return true;
+  }
+  return false;
+}
+
+// retitle this function
+function getAvailable(masterArray, subArray) {
+  // console.log("masterArray is");
+  // console.log(masterArray);
+  // console.log("subArray is");
+  // console.log(subArray);
+  const arr = [...masterArray];
+  const captureArray = [];
+  const lowestElement = subArray[subArray.length - 1] || 500;
+  arr.forEach((value) => {
+    if (value <= lowestElement) {
+      captureArray.push(value);
+    }
+  });
+  subArray.forEach((value) => {
+    const index = captureArray.indexOf(value);
+    if (index != -1) {
+      console.log("splice");
+      captureArray.splice(index, 1);
+    }
+  });
+  return captureArray;
+}
+
+function uniqueMembers(orderedArray) {
+  return [...new Set(orderedArray)];
+}
+
+let end = false;
+let length = 1;
+let sourceArray = [4, 4, 3, 1, 1];
+// let sourceArray = [4, 4, 3, 1, 1, 0];
+// let nextValue = { 4: 3, 3: 1, 1: 0, 0: null };
+let passForwardArray = [[]];
+let leafsArray = [];
+let workingArray = [];
+let batchsize = 5;
+let toCheck = [];
+let count = 1;
+
+let currentSource = [...sourceArray];
+
+// use while so that we stop when we run out of combinations
+while (!end) {
+  workingArray = [...passForwardArray];
+  // reset passForwardArray
+  passForwardArray = [];
+  console.log("workingArray:");
+  console.log(workingArray);
+
+  // outer for loop is to process workingArray items
+  for (i = 0; i < workingArray.length; i++) {
+    // create new unique values
+    //  to each workingArray starter value, create new sets by incrementally adding available, unique values from the sourceArray
+    //   getAvailable
+    //   uniqueMembers
+    let available = getAvailable(currentSource, workingArray[i]);
+    let uniqueAvailable = uniqueMembers(available);
+    console.log("uniqueAvailable:");
+    console.log(uniqueAvailable);
+
+    // inner for loop is to generate combos by adding unique availables
+    for (j = 0; j < uniqueAvailable.length; j++) {
+      toCheck = [...workingArray[i]];
+      toCheck.push(uniqueAvailable[j]);
+      console.log("toCheck:");
+      console.log(toCheck);
+      // check each value --
+      if (aLeaf(toCheck, batchsize)) {
+        // leafs get collected
+        leafsArray.push(toCheck);
+      } else {
+        // one that is not a leaf gets passed forward;
+        passForwardArray.push(toCheck);
+      }
+    }
+
+    // currentSource = [...passForwardArray];
+  }
+  if (count == 5) {
+    end = true;
+    break;
+  }
+  count++;
+  console.log("back to while");
+  workingArray = [...passForwardArray];
+}
+
+// ----------------
+
 // map groups into groups % batchsize
 // sort new array large to small
 // pull out groups with mod = 0
@@ -38,8 +144,40 @@ function subtractFromInventory(groupCollection, inventory) {
   }
 }
 
-console.log(inventory);
-console.log(subtractFromInventory(arrOne, inventory));
-console.log(inventory);
-console.log(subtractFromInventory(arrTwo, inventory));
-console.log(inventory);
+// console.log(inventory);
+// console.log(subtractFromInventory(arrOne, inventory));
+// console.log(inventory);
+// console.log(subtractFromInventory(arrTwo, inventory));
+// console.log(inventory);
+// console.log(aLeaf([2, 3, 4, 5], 5));
+// console.log(aLeaf([2, 3, 4, 5], 7));
+// console.log(aLeaf([2, 3, 4, 5], 14));
+// console.log(aLeaf([2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 9], 4));
+// console.log(aLeaf([2, 3, 4, 5], 1));
+// console.log(getAvailable([2, 3, 4, 5], [5]));
+// console.log(getAvailable([2, 3, 4, 5], [2, 4]));
+// console.log(getAvailable([2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 9], [2, 4]));
+// let testArray = [2, 3, 4, 5, 7];
+// console.log(getAvailable(testArray, [2, 4]));
+// console.log(testArray);
+// console.log(getAvailable([2, 3, 4, 5], []));
+// console.log(getAvailable([], [5]));
+// console.log(getAvailable([2, 3, 4, 5], [7]));
+// console.log(getAvailable([2, 3, 4, 5], 1));
+// console.log(getAvailable("the", [4]));
+// console.log(getAvailable("the", "t"));
+// console.log(getAvailable("the", "the"));
+// console.log(uniqueMembers([2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 9]));
+// console.log(uniqueMembers("the", "the"));
+// console.log(uniqueMembers("the quick brown fox jumped over the lazy dog"));
+// console.log(uniqueMembers(22, 14));
+// console.log(
+//   uniqueMembers([
+//     [1, 2, 3],
+//     [2, 3, 4],
+//     [1, 2, 3],
+//   ])
+// );
+
+console.log("leafsArray:");
+console.log(leafsArray);
