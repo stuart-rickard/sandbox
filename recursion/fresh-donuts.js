@@ -7,6 +7,23 @@
 // [4,4][4,3][4,1=leaf][3,1][1,1=end] go through each remaining value and pair it with each different value that is available. Leaves get noted and taken off the list.  At end go to next size group.
 // [4,4,3][4,4,1-contains leaf][4,3,1-contains leaf][3,1,1=leaf/end]  go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. Leaves get noted and taken off the list.  At end go to next size group.
 // [4,4,3,1-contains leaf/end]DONE go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. at end there is nothing left so don't go to next size
+
+let end = false;
+let length = 1;
+let sourceArray = [
+  8, 8, 8, 8, 8, 7, 7, 7, 6, 5, 5, 5, 4, 4, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1,
+  1, 0, 0, 0,
+];
+// XXXXXXXXXX deal with zeros in sourceArray
+// let sourceArray = [4, 4, 3, 1, 1, 0];
+// let nextValue = { 4: 3, 3: 1, 1: 0, 0: null };
+let passForwardArray = [[]];
+let leafsArray = [];
+let workingArray = [];
+let batchsize = 9;
+let toCheck = [];
+// let count = 1;
+
 function containsLeaf(toCheck, leafsArray) {
   let inventory = {};
 
@@ -85,20 +102,26 @@ function uniqueMembers(orderedArray) {
   return [...new Set(orderedArray)];
 }
 
-let end = false;
-let length = 1;
-let sourceArray = [4, 4, 3, 3, 3, 3, 2, 1, 1];
-// XXXXXXXXXX deal with zeros in sourceArray
-// let sourceArray = [4, 4, 3, 1, 1, 0];
-// let nextValue = { 4: 3, 3: 1, 1: 0, 0: null };
-let passForwardArray = [[]];
-let leafsArray = [];
-let workingArray = [];
-let batchsize = 5;
-let toCheck = [];
-let count = 1;
+function moveZeroesToLeafsArray(currentSource, leafsArray) {
+  let end = false;
+  let firstZero = true;
+  while (!end) {
+    let index = currentSource.indexOf(0);
+    if (index != -1) {
+      // console.log("splice");
+      currentSource.splice(index, 1);
+      if (firstZero) {
+        leafsArray.push([0]);
+        firstZero = false;
+      }
+    } else {
+      end = true;
+    }
+  }
+}
 
 let currentSource = [...sourceArray];
+moveZeroesToLeafsArray(currentSource, leafsArray);
 
 // use while so that we stop when we run out of combinations
 while (!end) {
@@ -174,9 +197,9 @@ while (!end) {
 //  {2: 4, 3: 5, 6: 1} - this means there are 4 twos, 5 threes, and 1 six
 //  if a group is [2, 3, 3, 6] we can use forEach on it so that group.forEach((value)=> inventory[value]--; if (inventory[value]<0){return false})
 
-let inventory = { 2: 4, 3: 5, 6: 1 };
-let arrOne = [2, 3, 3, 6];
-let arrTwo = [2, 2, 6];
+// let inventory = { 2: 4, 3: 5, 6: 1 };
+// let arrOne = [2, 3, 3, 6];
+// let arrTwo = [2, 2, 6];
 
 // function subtractFromInventory(groupCollection, inventory) {
 //   let flag;
