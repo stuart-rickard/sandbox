@@ -1,32 +1,39 @@
-// tree approach where depth is incrementally increased; a node where mod = 0 is a leaf - this prevents redundant gC's
-// use group generator and subtractFromInventory on the array of gC's to create valid cgC's
-// ++ refine this so that we're not looking at all valid cgC's
+// Problem statement:
 
-// 4,4,3,1,1,0
-// [4][3][1][0=leaf/end] go through each different value. leaves get noted and taken off the list. At end go to next size group.
-// [4,4][4,3][4,1=leaf][3,1][1,1=end] go through each remaining value and pair it with each different value that is available. Leaves get noted and taken off the list.  At end go to next size group.
-// [4,4,3][4,4,1-contains leaf][4,3,1-contains leaf][3,1,1=leaf/end]  go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. Leaves get noted and taken off the list.  At end go to next size group.
-// [4,4,3,1-contains leaf/end]DONE go through each remaining value and pair it with each different value that is available. if a collection "includes" a leaf take it off the list. at end there is nothing left so don't go to next size
+// There is a donuts shop that bakes donuts in batches of batchSize. They sell all of the donuts of a batch before they begin to sell the next batch. We are given an integer batchSize and a positive integer array sourceArray that provides the size of various groups of customers who want to visit the shop. Each customer will get exactly one donut.
 
-let end = false;
-let length = 1;
-let sourceArray = [
-  8, 8, 8, 8, 8, 7, 7, 7, 6, 5, 5, 5, 4, 4, 3, 3, 3, 3, 2, 1, 1, 1, 1, 1, 1, 1,
-  1, 0, 0, 0,
-];
-// XXXXXXXXXX deal with zeros in sourceArray
-// let sourceArray = [4, 4, 3, 1, 1, 0];
-// let nextValue = { 4: 3, 3: 1, 1: 0, 0: null };
-let passForwardArray = [[]];
-let leafsArray = [];
-let workingArray = [];
-let batchsize = 9;
-let toCheck = [];
-// let count = 1;
+// When a group visits the shop, all customers of the group must be served before serving any of the following groups. A group will be happy if they all get fresh donuts (i.e., the first customer of the group does not receive a donut from a batch that was left over from the previous group).
 
+// We need to rearrange the ordering of the groups to maximize the number of happy groups and return this number.
+
+// (Credit: adapted from Leetcode #1815.)
+
+// This solution uses a two-step approach. First we evaluate sourceArray to find all combinations of groups in which the total number of customers is a multiple of batchSize (a "leaf"). Second we check arrangements of these "leafs" to determine which arrangement results in the most happy groups.
+
+let endStepOne = false;
+// let sourceArray = [1455, 20044, 3, 991, 1, 456, 888, 4];
+let sourceArray = [7, 8, 1, 1, 1, 3];
+// let sourceArray = [2, 2, 2, 1, 1, 1];
+// XXXXXXXXXXX check what happens if there are no leafs
+// let sourceArray = [
+//   77661097, 287831335, 591851599, 931531218, 76145868, 782939541, 80670001,
+//   23100566, 682236334, 10648258, 312267263, 806088843, 850601907, 385678804,
+//   529635015, 503407101, 926262283, 922467807, 165549088, 108377551, 538405915,
+//   835098309, 853607030, 352287776, 82792996, 546824529, 714304009,
+// ];
+let passForwardArray = [[]]; // XXXXXXXXX come back to this; does it have an empty array in it so that it has a length?
+let leafsArray = []; // used to store "leafs" (combinations of groups in which the total number of customers is a multiple of batchSize)
+let workingArray = []; // a working array derived from sourceArray XXXX move down to function?
+// let batchSize = 9;
+// let batchSize = 2;
+let batchSize = 5;
+let toCheck = []; // used as a working store for combinations of groups that we want to check XXXX move down to function?
+
+// function containsLeaf is used to identify combinations of groups that aready contain a leaf; such combinations are not leafs
 function containsLeaf(toCheck, leafsArray) {
-  let inventory = {};
+  let inventory = {}; // working object
 
+  // creates an object that reflects the contents of toCheck; for example, if toCheck is [6, 3, 3, 2], the created inventory will be { 2: 1, 3: 2, 6: 1 }
   function createInventory(toCheck) {
     toCheck.forEach((element) => {
       if (inventory[element]) {
@@ -37,79 +44,95 @@ function containsLeaf(toCheck, leafsArray) {
     });
   }
 
+  // return true if the set of values of the leaf array are a subset of the values represented by inventory
+  function inventoryContainsLeaf(inventory, leaf) {
+    let flag;
+    // leaf.forEach((value) => {
+    for (value of leaf) {
+      // check whether the value in leaf exists in inventory; if so, decrement that property of inventory
+      if (inventory[value]--) {
+      } else {
+        // if the value is not in leaf, it means leaf is not a subset of inventory, so return false
+        return false;
+      }
+    }
+    // if all values of leaf are in inventory, leaf is a subset of inventory, so return true
+    return true;
+  }
+
+  // first, create inventory from toCheck
   createInventory(toCheck);
 
-  function subtractFromInventory(groupCollection, inventory) {
-    let flag;
-    groupCollection.forEach((value) => {
-      if (inventory[value]--) {
-        return;
-      } else {
-        flag = true;
-      }
-    });
-    if (flag) {
-      return false;
-    } else {
-      return true;
-    }
-  }
-  // if toCheck contains a leaf, return true
-  //  for loop though leafsArray
+  // second, check whether the inventory is contained by any existing leaf in leafsArray; if so, containsLeaf returns true
   for (const leaf of leafsArray) {
     const testInventory = { ...inventory };
-    if (subtractFromInventory(leaf, testInventory)) {
+    if (inventoryContainsLeaf(testInventory, leaf)) {
       return true;
     }
   }
-  // else return false
+  // else return false; toCheck does not contain a leaf
   return false;
 }
 
-function aLeaf(array, batchsize) {
-  if (array.reduce((partialSum, a) => partialSum + a, 0) % batchsize == 0) {
+// checks whether the sum of elements in an array is a multiple of batchSize
+function multipleOfBatchSize(array, batchSize) {
+  if (array.reduce((rollingSum, a) => rollingSum + a, 0) % batchSize == 0) {
     return true;
   }
   return false;
 }
 
-// retitle this function
-function getAvailable(masterArray, subArray) {
-  // console.log("masterArray is");
-  // console.log(masterArray);
-  // console.log("subArray is");
-  // console.log(subArray);
-  const arr = [...masterArray];
-  const captureArray = [];
+// XXXXX retitle this function; it returns the values that are equal or lower than the lowest element in workingArray[i]
+// XXXXXXXXXXXXXX this can be a lot simpler -- get unique elements from master array, then return any of them that are equal to or lower than lowest element; this eliminates the need for the unique elements function lower down
+function getAvailable(treatedGroupsArray, currentCollection) {
+  // DDD treatedGroupsArray is treatedGroupsArray
+  console.log("treatedGroupsArray:");
+  console.log(treatedGroupsArray);
+  console.log("currentCollection:");
+  console.log(currentCollection);
+  const arr = [...treatedGroupsArray];
+  // DDD availableValues is what gets returned
+  const availableValues = [];
   // XXXXXX deal with upper limit
-  const lowestElement = subArray[subArray.length - 1] || 500;
+  // DDD currentCollection is workingArray[i]
+  // XXXXX is currentCollection ordered in decreasing value?
+  const lowestElement =
+    currentCollection[currentCollection.length - 1] || batchSize;
+  // put values that are equal to or lower than the last item in workingArray[i] into the availableValues
+  console.log("lowestElement:");
+  console.log(lowestElement);
   arr.forEach((value) => {
     if (value <= lowestElement) {
-      captureArray.push(value);
+      availableValues.push(value);
     }
   });
-  subArray.forEach((value) => {
-    const index = captureArray.indexOf(value);
+  console.log("availableValues:");
+  console.log(availableValues);
+  // remove values from availableValues that are in workingArray[i]
+  currentCollection.forEach((value) => {
+    const index = availableValues.indexOf(value);
     if (index != -1) {
-      // console.log("splice");
-      captureArray.splice(index, 1);
+      availableValues.splice(index, 1);
     }
   });
-  return captureArray;
+  console.log("availableValues:");
+  console.log(availableValues);
+  console.log("********** end get availableValues");
+  return availableValues;
 }
 
 function uniqueMembers(orderedArray) {
   return [...new Set(orderedArray)];
 }
 
-function moveZeroesToLeafsArray(currentSource, leafsArray) {
+// this function removes any the zero values from treatedGroupsArray and, if there are any, puts [0] in leafsArray
+function moveZeroesToLeafsArray(treatedGroupsArray, leafsArray) {
   let end = false;
   let firstZero = true;
   while (!end) {
-    let index = currentSource.indexOf(0);
+    let index = treatedGroupsArray.indexOf(0);
     if (index != -1) {
-      // console.log("splice");
-      currentSource.splice(index, 1);
+      treatedGroupsArray.splice(index, 1);
       if (firstZero) {
         leafsArray.push([0]);
         firstZero = false;
@@ -120,40 +143,48 @@ function moveZeroesToLeafsArray(currentSource, leafsArray) {
   }
 }
 
-let currentSource = [...sourceArray];
-moveZeroesToLeafsArray(currentSource, leafsArray);
+// create a working array from the sourceArray
+let treatedGroupsArray = [...sourceArray];
+// update treatedGroupsArray so that each value is replaced by the value mod batchSize, then sorted in ascending order; using the mod value allows us to sort in ascending order and is equivalent when we want to check whether the values of the groups in a collection are a multiple of batchSize
+treatedGroupsArray = treatedGroupsArray
+  .map((value) => value % batchSize)
+  .sort((a, b) => a - b);
+// XXXXXXXX
+let finalCheckSource = [...treatedGroupsArray];
+
+// we can save time in our leaf search algorithm by first removing the zeros from the source array
+// XXXX this is confusing; not obvious that this changes treatedGroupsArray
+moveZeroesToLeafsArray(treatedGroupsArray, leafsArray);
 
 // use while so that we stop when we run out of combinations
-while (!end) {
+while (!endStepOne) {
+  // working array starts as [[]]
   workingArray = [...passForwardArray];
+  console.log("workingArray is: -----------");
+  console.log(workingArray);
   // reset passForwardArray
   passForwardArray = [];
-  console.log("workingArray:");
-  console.log(workingArray);
 
   // outer for loop is to process workingArray items
   for (i = 0; i < workingArray.length; i++) {
     // create new unique values
-    //  to each workingArray starter value, create new sets by incrementally adding available, unique values from the sourceArray
+    //  to each workingArray starter value, create new sets by incrementally adding available, unique values from treatedGroupsArray
     //   getAvailable
     //   uniqueMembers
-    let available = getAvailable(currentSource, workingArray[i]);
-    let uniqueAvailable = uniqueMembers(available);
-    console.log("uniqueAvailable:");
-    console.log(uniqueAvailable);
+    let availableValues = getAvailable(treatedGroupsArray, workingArray[i]);
+    let uniqueAvailableValues = uniqueMembers(availableValues);
 
     // inner for loop is to generate combos by adding unique availables
-    for (j = 0; j < uniqueAvailable.length; j++) {
+    for (j = 0; j < uniqueAvailableValues.length; j++) {
       toCheck = [...workingArray[i]];
-      toCheck.push(uniqueAvailable[j]);
-      console.log("toCheck:");
-      console.log(toCheck);
+      toCheck.push(uniqueAvailableValues[j]);
+
       // check each value --
-      if (aLeaf(toCheck, batchsize)) {
+      if (multipleOfBatchSize(toCheck, batchSize)) {
         // leafs get collected if they don't already contain a leaf
         if (containsLeaf(toCheck, leafsArray)) {
           // do nothing
-          console.log("do nothing");
+          // console.log("do nothing");
         } else {
           leafsArray.push(toCheck);
         }
@@ -162,95 +193,110 @@ while (!end) {
         passForwardArray.push(toCheck);
       }
     }
-
-    // currentSource = [...passForwardArray];
   }
-  // if (count == 5) {
+  // if passForwardArray has any elements
   if (!passForwardArray.length) {
-    end = true;
+    // XXXXXXXXXXXXX is endStepOne used?
+    endStepOne = true;
     break;
   }
-  // count++;
-  console.log("back to while");
   workingArray = [...passForwardArray];
 }
 
-// ----------------
-
-// map groups into groups % batchsize
-// sort new array large to small
-// pull out groups with mod = 0
-// create groupCollections that have 2 members, then 3, then 4, etc
-// ++ refine groupCollection generation - not necessary to create all possibilities
-// test groupCollections for mod = 0
-
-// collections of gC's need to be tested
-// limited by available groups
-// looking for largest collection of gC's (including counting remainder as one happy customer)
-// # this will tend to be a collection of small gC's, but optimal solution can have larger gC's depending on the set of groups we are testing
-// develop cgC's
-// # two approaches: 1) blindly combine gC's first and then test complete cgC whether it is using too many groups; or 2) strategically combine gC's so that we are only adding a gC to a cgC if it qualifies
-//  start with small gC's
-
-// algorithm for checking whether a gC can be formed with remaining groups
-// create an inventory object where the number is the property and the value is the count of that number:
-//  {2: 4, 3: 5, 6: 1} - this means there are 4 twos, 5 threes, and 1 six
-//  if a group is [2, 3, 3, 6] we can use forEach on it so that group.forEach((value)=> inventory[value]--; if (inventory[value]<0){return false})
-
-// let inventory = { 2: 4, 3: 5, 6: 1 };
-// let arrOne = [2, 3, 3, 6];
-// let arrTwo = [2, 2, 6];
-
-// function subtractFromInventory(groupCollection, inventory) {
-//   let flag;
-//   groupCollection.forEach((value) => {
-//     if (inventory[value]--) {
-//       return;
-//     } else {
-//       flag = true;
-//     }
-//   });
-//   if (flag) {
-//     return false;
-//   } else {
-//     return true;
-//   }
-// }
-
-// console.log(inventory);
-// console.log(subtractFromInventory(arrOne, inventory));
-// console.log(inventory);
-// console.log(subtractFromInventory(arrTwo, inventory));
-// console.log(inventory);
-// console.log(aLeaf([2, 3, 4, 5], 5));
-// console.log(aLeaf([2, 3, 4, 5], 7));
-// console.log(aLeaf([2, 3, 4, 5], 14));
-// console.log(aLeaf([2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 9], 4));
-// console.log(aLeaf([2, 3, 4, 5], 1));
-// console.log(getAvailable([2, 3, 4, 5], [5]));
-// console.log(getAvailable([2, 3, 4, 5], [2, 4]));
-// console.log(getAvailable([2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 9], [2, 4]));
-// let testArray = [2, 3, 4, 5, 7];
-// console.log(getAvailable(testArray, [2, 4]));
-// console.log(testArray);
-// console.log(getAvailable([2, 3, 4, 5], []));
-// console.log(getAvailable([], [5]));
-// console.log(getAvailable([2, 3, 4, 5], [7]));
-// console.log(getAvailable([2, 3, 4, 5], 1));
-// console.log(getAvailable("the", [4]));
-// console.log(getAvailable("the", "t"));
-// console.log(getAvailable("the", "the"));
-// console.log(uniqueMembers([2, 3, 4, 5, 6, 6, 6, 6, 6, 6, 6, 9]));
-// console.log(uniqueMembers("the", "the"));
-// console.log(uniqueMembers("the quick brown fox jumped over the lazy dog"));
-// console.log(uniqueMembers(22, 14));
-// console.log(
-//   uniqueMembers([
-//     [1, 2, 3],
-//     [2, 3, 4],
-//     [1, 2, 3],
-//   ])
-// );
-
 console.log("leafsArray:");
 console.log(leafsArray);
+
+// go through leafsArray recursively
+
+let maxSets = 0;
+
+// function valuesAreFound(che, remainderArray)
+function valuesAreFound(che, remainderArray) {
+  let returnArray = [...remainderArray];
+  //   if che is in remainderArray
+  //      return remainderArray less che
+  //   else
+  //      return false
+  for (value of che) {
+    let result = returnArray.indexOf(value);
+    if (result === -1) {
+      return false;
+    } else {
+      returnArray.splice(result, 1);
+    }
+  }
+  return returnArray;
+}
+
+// function checkThisIndex(currentIndex, remainderArray, currentSetCount, gatheredArray)
+function checkThisIndex(
+  currentIndex,
+  remainderArray,
+  currentSetCount,
+  gatheredArray
+) {
+  //   checkResult = valuesAreFound(leafsArray[currentIndex], remainderArray)
+  let checkResult = valuesAreFound(leafsArray[currentIndex], remainderArray);
+  //   if checkResult
+  if (checkResult) {
+    //     increment setCount
+    let newSetCount = currentSetCount + 1;
+    //     push to gatheredArray
+    let newGatheredArray = [...gatheredArray];
+    newGatheredArray.push(leafsArray[currentIndex]);
+    //     recur - checkThisIndex( current index, checkResult, current set count)
+    checkThisIndex(currentIndex, checkResult, newSetCount, newGatheredArray);
+    //   else
+  } else {
+    let newCurrentIndex = currentIndex + 1;
+    while (
+      newCurrentIndex < leafsArray.length &&
+      leafsArray[newCurrentIndex].length <= remainderArray.length
+    ) {
+      //       checkResult = valuesAreFound(leafsArray[currentIndex], remainderArray)
+      checkResult = valuesAreFound(leafsArray[newCurrentIndex], remainderArray);
+      //       if checkResult
+      if (checkResult) {
+        //         increment a copy of setCount
+        let newSetCount = currentSetCount + 1;
+        //         push to gatheredArray
+        let newGatheredArray = [...gatheredArray];
+        newGatheredArray.push(leafsArray[currentIndex]);
+        //         recur - checkThisIndex( current index, checkResult, current set count)
+        checkThisIndex(
+          newCurrentIndex,
+          checkResult,
+          newSetCount,
+          newGatheredArray
+        );
+      }
+      //       increment currentIndex
+      newCurrentIndex++;
+    }
+    //     increment the current set count if there's anything in the remainder array
+    // try to move this to the end in case leafsArray is empty
+    console.log("remainderArray is:");
+    console.log(remainderArray);
+    if (remainderArray.length) {
+      currentSetCount++;
+    }
+    //     update highest set count if ours is the greatest
+    if (currentSetCount > maxSets) {
+      maxSets = currentSetCount;
+      console.log(currentSetCount, gatheredArray);
+    }
+    //     console.log (currentSetCount, gatheredArray)
+    console.log(currentSetCount);
+  }
+}
+
+// XXXX doesn't work if there's nothing in leafsArray
+// for leafsArray index 0 to length -1
+for (i = 0; i < leafsArray.length; i++) {
+  //   let gatheredArray = []
+  let gatheredArray = [];
+  //   checkThisIndex(index, leafsArray, 0, gatheredArray)
+  checkThisIndex(i, finalCheckSource, 0, gatheredArray);
+}
+
+console.log("maxSets is: " + maxSets);

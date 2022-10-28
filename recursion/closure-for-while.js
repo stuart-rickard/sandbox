@@ -1,4 +1,12 @@
-// use while loops not for loops with recursion; for loop does not have closure -- unless let is used in declaration
+// comparison of closure -- with for and while loops
+
+function oneLessFor(value) {
+  let newValue = value - 1;
+  for (i = newValue; i > 0; i--) {
+    console.log(i);
+    oneLessFor(i);
+  }
+}
 
 function oneLessWhile(value) {
   let newValue = value - 1;
@@ -6,14 +14,6 @@ function oneLessWhile(value) {
     console.log(newValue);
     oneLessFor(newValue);
     newValue--;
-  }
-}
-
-function oneLessFor(value) {
-  let newValue = value - 1;
-  for (i = newValue; i > 0; i--) {
-    console.log(i);
-    oneLessFor(i);
   }
 }
 
@@ -26,8 +26,8 @@ function oneLessForWithLet(value) {
   }
 }
 
-oneLessWhile(4);
-console.log("**************");
 oneLessFor(4);
+console.log("**************");
+oneLessWhile(4);
 console.log("**************");
 oneLessForWithLet(4);
