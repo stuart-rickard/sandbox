@@ -10,22 +10,13 @@
 
 // This solution uses a two-step approach. First, evaluate sourceArray to find all combinations of groups in which the total number of customers is a multiple of batchSize (a "goodCombination"). Second, check "arrangements" of these goodCombinations to determine which arrangement results in the most happy groups.
 
-// let sourceArray = [1455, 20044, 3, 991, 1, 456, 888, 4];
-// let sourceArray = [7, 8, 1, 1, 1, 3, 3, 3, 33];
-// let sourceArray = [2, 2, 2, 1, 1, 1];
 let sourceArray = [
   77661097, 287831335, 591851599, 931531218, 76145868, 782939541, 80670001,
   23100566, 682236334, 10648258, 312267263, 806088843, 850601907, 385678804,
   529635015, 503407101, 926262283, 922467807, 165549088, 108377551, 538405915,
   835098309, 853607030, 352287776, 82792996, 546824529, 714304009,
 ];
-// let sourceArray = [4];
-// let sourceArray = [];
-// let batchSize = 9;
-// let batchSize = 2;
 let batchSize = 5;
-// XXXXXXXXXXXXXX fix bug big batchSize
-// let batchSize = 50;
 
 let goodCombinationsArray = []; // used to store "goodCombinations" (combinations of groups in which the total number of customers is a multiple of batchSize)
 
@@ -199,7 +190,7 @@ console.log(goodCombinationsArray);
 
 // SECOND STEP: arrange goodCombinations -------------------------
 
-let maximumHappyGroups = 0; // this is the variable that is returned as the ultimate answer
+let maximumHappyGroups = 0; // this is the variable that is returned at the end!
 
 // returns false if all groups in goodCombination are not found in remainingGroupsArray, otherwise removes the groups in goodCombination from remainingGroupsArray and returns the updated array
 function checkAndUpdateRemainingGroupsArray(
@@ -219,7 +210,7 @@ function checkAndUpdateRemainingGroupsArray(
 }
 
 // recursive function that adds good combinations to arrangementOfGoodCombinations until remainingGroupsArray is depleted, at which point it checks whether the arrangement has maximized happy groups; if so, it updates the maximumHappyGroups variable; it crawls through the tree of arrangements by incrementing indexInGoodCombinationsArray, which means that it starts with good combinations that have fewer members, then ones with more members
-// XXXX can arrangementOfGoodCombinations be deleted?
+// TODO can arrangementOfGoodCombinations be deleted?
 function createAndCheckArrangement(
   indexInGoodCombinationsArray,
   remainingGroupsArray,
@@ -261,20 +252,13 @@ function createAndCheckArrangement(
       return false;
     }
   }
+  // check whether it is possible to increase maximumHappyGroups at the current indexInGoodCombinationsArray; it won't be possible if we are checking a good combination that is long and there aren't enough groups remaining in remainingGroupsArray
   if (
     Math.ceil(
       remainingGroupsArray.length /
         goodCombinationsArray[indexInGoodCombinationsArray].length
     ) >=
     maximumHappyGroups + 1 - happyGroupsCounter
-
-    // possibleToIncreaseMaximumHappyGroups(
-    //   maximumHappyGroups,
-    //   indexInGoodCombinationsArray,
-    //   remainingGroupsArray,
-    //   happyGroupsCounter
-    // )
-    // true
   ) {
     // newRemainingGroupsArray is false if the good combination doesn't exist in remainingGroupsArray; otherwise it is an array that is remainingGroupsArray without the groups in the good combination
     let newRemainingGroupsArray = checkAndUpdateRemainingGroupsArray(
