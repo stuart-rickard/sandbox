@@ -1,3 +1,3 @@
 # Sandbox
 
-This repo contains test projects.
+This repo contains test projects and experiments.
